@@ -183,3 +183,76 @@ async def get_all_users() -> List[dict]:
     finally:
         cursor.close()
         conn.close()
+
+@app.post("/db/users/")
+async def create_user_to_db(user: User):
+    """
+    ユーザー作成（DBにのみ）
+    """
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO users (name, email) VALUES (%s, %s)",
+            (user.name, user.email)
+        )
+        conn.commit()
+        return {"message": "User created successfully"}
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=400, detail=str(err))
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.put("/db/users/{email}")
+async def update_user_name_to_db(email: str, name: str):
+    """
+    ユーザー名更新（DBにのみ）
+    """
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "UPDATE users SET name = %s WHERE email = %s",
+            (name, email)
+        )
+        conn.commit()
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+        return {"message": "User updated successfully"}
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=400, detail=str(err))
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.get("/db/users/{email}")
+async def get_user_from_db(email: str):
+    """
+    メールアドレスでユーザーを検索（DBからのみ）
+    """
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("SELECT name, email FROM users WHERE email = %s", (email,))
+        user = cursor.fetchone()
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.get("/db/users")
+async def get_all_users_from_db() -> List[dict]:
+    """
+    全ユーザーを取得（DBからのみ）
+    """
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("SELECT name, email FROM users")
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        conn.close()

@@ -24,7 +24,7 @@ const TEST_USERS = Array.from({ length: 10 }, (_, i) => ({
 // セットアップ - テストユーザーの作成
 export function setup() {
     TEST_USERS.forEach(user => {
-        http.post(`${BASE_URL}/users/`, JSON.stringify(user), {
+        http.post(`${BASE_URL}/db/users/`, JSON.stringify(user), {
             headers: { 'Content-Type': 'application/json' }
         });
     });
@@ -39,7 +39,7 @@ export default function(data) {
     const newName = `Updated_${randomString(5)}`;
    
     const res = http.put(
-        `${BASE_URL}/users/${email}?name=${newName}`,
+        `${BASE_URL}/db/users/${email}?name=${newName}`,
         null,
         { tags: { type: 'write' } }
     );
