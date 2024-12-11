@@ -39,3 +39,10 @@ services:
     image: redis:latest
     ports:
       - "6479:6379"
+
+  k6:
+    image: grafana/k6:latest
+    volumes:
+      - ./loadtest:/scripts
+    depends_on:
+      - api
